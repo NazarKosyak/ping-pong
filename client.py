@@ -2,9 +2,13 @@ from pygame import *
 import socket
 import json
 from threading import Thread
+from menu import get_connection
+
+SERVER_HOST, SERVER_PORT = get_connection()
 
 # ---ПУГАМЕ НАЛАШТУВАННЯ ---
 WIDTH, HEIGHT = 800, 600
+mixer.init()
 init()
 screen = display.set_mode((WIDTH, HEIGHT))
 clock = time.Clock()
@@ -14,7 +18,7 @@ def connect_to_server():
     while True:
         try:
             client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            client.connect(('localhost', 8080)) # ---- Підключення до сервера
+            client.connect(SERVER_PORT,SERVER_HOST) # ---- Підключення до сервера
             buffer = ""
             game_state = {}
             my_id = int(client.recv(24).decode())
@@ -41,19 +45,20 @@ def receive():
 font_win = font.Font(None, 72)
 font_main = font.Font(None, 36)
 # --- ЗОБРАЖЕННЯ ----
-background = image.load("bg.png")
+background = image.load("bg.jpg")
 background = transform.scale(background, (WIDTH,HEIGHT))
 
-ball = image.load("Soccer_ball.svg.png")
+ball = image.load("ball.png")
 ball = transform.scale(ball,(20,20))
 
-platform1 = image.load("images.png")
+platform1 = image.load("platform.png")
 platform1 = transform.scale(platform1, (20,100))
 
-platform2 = image.load("images.png")
+platform2 = image.load("platform.png")
 platform2 = transform.scale(platform2, (20,100))
 # --- ЗВУКИ ---
-
+mixer.music.load("sraka.flac")
+mixer.music.play(-1)
 # --- ГРА ---
 game_over = False
 winner = None
