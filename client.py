@@ -1,24 +1,28 @@
+import pygame
 from pygame import *
 import socket
 import json
 from threading import Thread
 from menu import get_connection
 
+
 SERVER_HOST, SERVER_PORT = get_connection()
 
 # ---ПУГАМЕ НАЛАШТУВАННЯ ---
 WIDTH, HEIGHT = 800, 600
-mixer.init()
 init()
+mixer.init()
 screen = display.set_mode((WIDTH, HEIGHT))
 clock = time.Clock()
 display.set_caption("Пінг-Понг")
+
+
 # ---СЕРВЕР ---
 def connect_to_server():
     while True:
         try:
             client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            client.connect(SERVER_PORT,SERVER_HOST) # ---- Підключення до сервера
+            client.connect((SERVER_HOST, SERVER_PORT)) # ---- Підключення до сервера
             buffer = ""
             game_state = {}
             my_id = int(client.recv(24).decode())
@@ -46,19 +50,28 @@ font_win = font.Font(None, 72)
 font_main = font.Font(None, 36)
 # --- ЗОБРАЖЕННЯ ----
 background = image.load("bg.jpg")
-background = transform.scale(background, (WIDTH,HEIGHT))
+background = transform.scale(background, (WIDTH, HEIGHT))
 
 ball = image.load("ball.png")
-ball = transform.scale(ball,(20,20))
+ball = transform.scale(ball, (20, 20))
 
 platform1 = image.load("platform.png")
-platform1 = transform.scale(platform1, (20,100))
+platform1 = transform.rotate(platform1, -90)
+platform1 = transform.scale(platform1, (20, 100))
 
 platform2 = image.load("platform.png")
-platform2 = transform.scale(platform2, (20,100))
+platform2 = transform.rotate(platform2, -90)
+platform2 = transform.scale(platform2, (20, 100))
+
+platform3 = transform.flip(platform2, 1, 0)
+
 # --- ЗВУКИ ---
 mixer.music.load("sraka.flac")
 mixer.music.play(-1)
+
+
+
+
 # --- ГРА ---
 game_over = False
 winner = None
@@ -103,10 +116,11 @@ while True:
         continue  # Блокує гру після перемоги
 
     if game_state:
-        screen.blit(background,(0,0))
-        draw.rect(screen, (0, 255, 0), (20, game_state['paddles']['0'], 20, 100))
-        draw.rect(screen, (255, 0, 255), (WIDTH - 40, game_state['paddles']['1'], 20, 100))
+        screen.blit(background, (0, 0))
+        screen.blit(platform1, (20, game_state['paddles']['0']))
+        screen.blit(platform2, (WIDTH - 40, game_state['paddles']['1']))
         screen.blit(ball, (game_state['ball']['x'], game_state['ball']['y']))
+
         score_text = font_main.render(f"{game_state['scores'][0]} : {game_state['scores'][1]}", True, (255, 255, 255))
         screen.blit(score_text, (WIDTH // 2 -25, 20))
 
@@ -114,19 +128,21 @@ while True:
             if game_state['sound_event'] == 'wall_hit':
                 # звук відбиття м'ячика від стін
                 pass
+
             if game_state['sound_event'] == 'platform_hit':
                 # звук відбиття м'ячика від платформи
                 pass
+                
 
-    else:
-        wating_text = font_main.render(f"Очікування гравців...", True, (255, 255, 255))
-        screen.blit(wating_text, (WIDTH // 2 - 25, 20))
+        else:
+            wating_text = font_main.render(f"Очікування гравців...", True, (255, 255, 255))
+            screen.blit(wating_text, (WIDTH // 2 - 25, 20))
 
-    display.update()
-    clock.tick(60)
+        display.update()
+        clock.tick(60)
 
-    keys = key.get_pressed()
-    if keys[K_w]:
-        client.send(b"UP")
-    elif keys[K_s]:
-        client.send(b"DOWN")
+        keys = key.get_pressed()
+        if keys[K_w]:
+            client.send(b"UP")
+        elif keys[K_s]:
+            client.send(b"DOWN")

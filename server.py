@@ -35,6 +35,7 @@ class GameServer:
         self.game_over = False
         self.winner = None
 
+
     def handle_client(self, pid):
         conn = self.clients[pid]
         try:
@@ -51,6 +52,7 @@ class GameServer:
                 self.game_over = True
                 self.winner = 1 - pid  # інший гравець автоматично виграє
                 print(f"Гравець {pid} відключився. Переміг гравець {1 - pid}.")
+
 
     def broadcast_state(self):
         state = json.dumps({
@@ -92,6 +94,7 @@ class GameServer:
                 if self.ball['x'] < 0:
                     self.scores[1] += 1
                     self.reset_ball()
+
                 elif self.ball['x'] > WIDTH:
                     self.scores[0] += 1
                     self.reset_ball()
@@ -99,6 +102,7 @@ class GameServer:
                 if self.scores[0] >= 10:
                     self.game_over = True
                     self.winner = 0
+
                 elif self.scores[1] >= 10:
                     self.game_over = True
                     self.winner = 1
@@ -114,6 +118,8 @@ class GameServer:
             "vx": BALL_SPEED * random.choice([-1, 1]),
             "vy": BALL_SPEED * random.choice([-1, 1])
         }
+    
+    
 
     def accept_players(self):
         for pid in [0, 1]:
